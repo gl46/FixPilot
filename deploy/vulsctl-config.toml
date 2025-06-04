@@ -1,0 +1,164 @@
+[default]
+# Vuls 配置文件
+# 用于配置扫描目标和参数
+
+# 全局设置
+[default.global]
+# 结果输出目录
+resultsDir = "/opt/vuls/results"
+
+# 日志设置
+logDir = "/opt/vuls/log"
+logLevel = "info"
+
+# 数据库设置 (可选，用于存储扫描结果)
+[default.database]
+type = "sqlite3"
+path = "/opt/vuls/vuls.sqlite3"
+
+# CVE 数据库设置
+[default.cveDict]
+type = "sqlite3"
+path = "/opt/vuls/cve.sqlite3"
+
+# OVAL 数据库设置 (可选)
+[default.ovalDict]
+type = "sqlite3"
+path = "/opt/vuls/oval.sqlite3"
+
+# 扫描目标配置
+[servers]
+
+# 示例：本地主机扫描
+[servers.localhost]
+host = "127.0.0.1"
+port = "22"
+user = "root"
+keyPath = "/root/.ssh/id_rsa"
+scanMode = ["fast", "deep"]
+# 可选的包管理器
+# packageManager = "apt"
+
+# 示例：远程主机扫描
+# [servers.web-server-01]
+# host = "192.168.1.100"
+# port = "22"
+# user = "ubuntu"
+# keyPath = "/root/.ssh/id_rsa"
+# scanMode = ["fast"]
+# 
+# [servers.db-server-01]
+# host = "192.168.1.101"
+# port = "22"
+# user = "root"
+# keyPath = "/root/.ssh/id_rsa"
+# scanMode = ["fast", "deep"]
+
+# 扫描配置
+[default.scan]
+# 扫描超时时间（秒）
+timeout = 300
+
+# 并发扫描数量
+parallel = 5
+
+# 是否跳过已知的安全更新
+skipBroken = true
+
+# 是否扫描容器
+containers = false
+
+# 报告配置
+[default.report]
+# 报告格式
+format = ["json", "xml"]
+
+# 是否包含 CVE 详情
+cveDetail = true
+
+# 是否包含修复信息
+fixedInfo = true
+
+# CVSS 评分阈值（只报告高于此分数的漏洞）
+cvssScoreOver = 0.0
+
+# 是否忽略未评分的漏洞
+ignoreUnscoredCves = false
+
+# 通知配置 (可选)
+[default.slack]
+# Slack webhook URL
+# hookURL = "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+# channel = "#security"
+# iconEmoji = ":ghost:"
+# authUser = "vuls"
+
+# 邮件通知配置 (可选)
+[default.email]
+# smtpAddr = "smtp.gmail.com"
+# smtpPort = "587"
+# user = "your-email@gmail.com"
+# password = "your-password"
+# from = "your-email@gmail.com"
+# to = ["admin@example.com"]
+# cc = ["security@example.com"]
+# subjectPrefix = "[Vuls]"
+
+# HTTP 通知配置 (可选)
+[default.http]
+# url = "http://localhost:8000/webhook/vuls"
+# method = "POST"
+# headers = { "Content-Type" = "application/json" }
+
+# 扫描策略配置
+[default.scanPolicy]
+# 快速扫描：只检查已安装的包
+fast = true
+
+# 深度扫描：检查所有可能的漏洞
+deep = false
+
+# 是否扫描内核漏洞
+kernel = true
+
+# 是否扫描 WordPress 插件漏洞
+wordpress = false
+
+# 是否扫描库文件漏洞
+library = true
+
+# 排除规则
+[default.ignore]
+# 排除特定的 CVE
+# cveIDs = ["CVE-2016-1000027"]
+
+# 排除特定的包
+# pkgNames = ["package-name"]
+
+# 排除特定的路径
+# paths = ["/tmp", "/var/tmp"]
+
+# 高级配置
+[default.advanced]
+# SSH 连接超时
+sshTimeout = 30
+
+# 命令执行超时
+cmdTimeout = 120
+
+# 是否使用 sudo
+sudo = true
+
+# 自定义扫描脚本路径
+# customScript = "/opt/vuls/scripts/custom.sh"
+
+# 缓存配置
+[default.cache]
+# 是否启用缓存
+enabled = true
+
+# 缓存过期时间（小时）
+expireHours = 24
+
+# 缓存目录
+dir = "/opt/vuls/cache"

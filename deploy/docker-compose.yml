@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  # Vuls 扫描服务
+  vulsctl:
+    image: vuls/vuls:latest
+    container_name: fixpilot-vuls
+    volumes:
+      - ./vulsctl-config.toml:/opt/vuls/config.toml:ro
+      - ~/.ssh:/root/.ssh:ro
+      - vuls_data:/opt/vuls
+      - ./results:/opt/vuls/results
+    networks:
+      - fixpilot-network
+    environment:
+      - TZ=Asia/Shanghai
+    command: ["tail", "-f", "/dev/null"]  # 保持容器运行
+    restart: unless-stopped
+
+  # 后端 API 服务
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: fixpilot-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./results:/app/results:ro
+      - ./playbooks:/app/playbooks
+      - backend_data:/app/data
+    networks:
+      - fixpilot-network
+    environment:
+      - DATABASE_URL=sqlite:///./data/fixpilot.db
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LOG_LEVEL=INFO
+      - TZ=Asia/Shanghai
+    depends_on:
+      - vulsctl
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 前端服务
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: fixpilot-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - fixpilot-network
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - TZ=Asia/Shanghai
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Redis 缓存服务（可选）
+  redis:
+    image: redis:7-alpine
+    container_name: fixpilot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fixpilot-network
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: fixpilot-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - fixpilot-network
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  # 定时任务服务
+  scheduler:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.scheduler
+    container_name: fixpilot-scheduler
+    volumes:
+      - ./results:/app/results
+      - ./playbooks:/app/playbooks
+      - backend_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - fixpilot-network
+    environment:
+      - DATABASE_URL=sqlite:///./data/fixpilot.db
+      - VULS_CONTAINER=fixpilot-vuls
+      - TZ=Asia/Shanghai
+    depends_on:
+      - vulsctl
+      - backend
+    restart: unless-stopped
+
+networks:
+  fixpilot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  vuls_data:
+    driver: local
+  backend_data:
+    driver: local
+  redis_data:
+    driver: local
