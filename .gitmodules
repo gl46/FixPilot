@@ -1,0 +1,3 @@
+[submodule "SecGPT-1.5B"]
+	path = SecGPT-1.5B
+	url = https://huggingface.co/clouditera/secgpt-mini
