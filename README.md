@@ -85,7 +85,21 @@ keyPath = "/root/.ssh/id_rsa"
 scanMode = ["fast", "deep"]
 ```
 
-### 4. 启动服务
+### 4. 准备 SecGPT 模型 (可选)
+
+`SecGPT-1.5B/` 目录在仓库中默认为空，用于存放离线模型文件。您可以从 [Hugging Face](https://huggingface.co/clouditera/secgpt-mini) 下载 `secgpt-mini-1.5b` 模型并解压到该目录，结构示例：
+
+```
+SecGPT-1.5B/
+├─ config.json
+├─ pytorch_model.bin
+├─ tokenizer_config.json
+└─ ...
+```
+
+如果模型存放在其他位置，请在 `.env` 中设置 `SECGPT_MODEL_PATH=/path/to/secgpt-mini`。
+
+### 5. 启动服务
 
 ```bash
 # 使用 Docker Compose 启动所有服务
@@ -96,7 +110,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-### 5. 访问系统
+### 6. 访问系统
 
 - 前端界面: http://localhost:3000
 - 后端 API: http://localhost:8000
