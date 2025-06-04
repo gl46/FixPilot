@@ -143,6 +143,11 @@ curl -X POST http://localhost:8000/playbook \
 5. **自动执行**: 执行修复任务并记录结果
 6. **结果通知**: 推送修复结果到企业微信
 
+### Scheduler 服务
+
+启动 scheduler 服务，提供定时自动扫描和结果解析能力。
+默认设定的 cron 表达式为 `0 2 * * *`，可以通过环境变量 `SCAN_CRON_EXPRESSION` 进行自定义。
+
 ## 🔧 开发指南
 
 ### 后端开发

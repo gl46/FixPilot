@@ -1,0 +1,42 @@
+# FixPilot Scheduler Dockerfile
+FROM python:3.11-slim
+
+# 设置工作目录
+WORKDIR /app
+
+# 环境变量
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# 安装系统依赖和 cron
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    cron \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件
+COPY requirements.txt .
+
+# 安装 Python 依赖
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# 复制应用代码
+COPY . .
+
+# 创建必要目录
+RUN mkdir -p /app/data /app/results /app/playbooks /app/logs
+
+# 复制调度脚本
+COPY scheduler.sh scan_and_parse.sh ./
+RUN chmod +x /app/*.sh /app/*.py
+
+# 暴露端口(可选)
+EXPOSE 8000
+
+# 启动调度脚本
+CMD ["/app/scheduler.sh"]
